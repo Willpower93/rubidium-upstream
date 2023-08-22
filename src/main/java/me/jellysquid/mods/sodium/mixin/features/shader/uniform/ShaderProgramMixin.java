@@ -35,30 +35,7 @@ public class ShaderProgramMixin {
     @Unique
     private Object2IntMap<String> uniformCache;
 
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void initCache(ResourceFactory factory, String name, VertexFormat format, CallbackInfo ci) {
-        this.uniformCache = new Object2IntOpenHashMap<>();
-        this.uniformCache.defaultReturnValue(-1);
-
-        for (var samplerName : this.samplerNames) {
-            var location = GlUniform.getUniformLocation(this.glRef, samplerName);
-
-            if (location == -1) {
-                throw new IllegalStateException("Failed to find uniform '%s' during shader init".formatted(samplerName));
-            }
-
-            this.uniformCache.put(samplerName, location);
-        }
-    }
-
-    @Redirect(method = "bind", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/GlUniform;getUniformLocation(ILjava/lang/CharSequence;)I"))
-    private int redirectGetUniformLocation(int program, CharSequence name) {
-        var location = this.uniformCache.getInt(name);
-
-        if (location == -1) {
-            throw new IllegalStateException("Failed to find uniform '%s' during shader bind");
-        }
-
-        return location;
-    }
+@Inject(method = { "<init>" }, at = { @At("RETURN") })
+private void initCache(ResourceProvider factory, ResourceLocation name, VertexFormat format, CallbackInfo ci) {
+    ....
 }
